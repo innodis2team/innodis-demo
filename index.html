@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Smart Biz, Smart Answer! 이노디스</title>
+<style>
+  /* 오프라인 시연용 로컬 폰트 */
+  @font-face{
+    font-family:'Pretendard Variable';
+    font-style:normal;
+    font-display:swap;
+    font-weight:45 920;
+    src:url('PretendardVariable.woff2') format('woff2-variations');
+  }
+  :root{
+    --blue:#1C80CC;
+    --blue-deep:#0E5A96;
+    --orange:#F26532;
+    --ink:#1A2430;
+    --body:#4A5560;
+    --line:#DCE3EA;
+    --ground:#F5F8FB;
+    --card:#FFFFFF;
+    --hero-a:#071B2E;
+    --hero-b:#0E3A5E;
+    --hero-glow:rgba(58,160,235,.35);
+    --chip-bg:rgba(255,255,255,.10);
+    --chip-line:rgba(255,255,255,.28);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ink:#E8EEF4;
+      --body:#A8B4C0;
+      --line:#2A3846;
+      --ground:#0D141B;
+      --card:#16202B;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:"Pretendard Variable",Pretendard,"Noto Sans KR","Malgun Gothic",sans-serif;
+    background:var(--ground); color:var(--ink); line-height:1.6;
+  }
+  /* ───────── Header (히어로 위 투명 → 스크롤 시 흰색 전환) ───────── */
+  header.site{
+    position:fixed; top:0; left:0; right:0; z-index:50; /* 흐름에서 제거 → 히어로가 GNB 뒤까지 꽉 참 */
+    background:transparent;
+    border-bottom:1px solid transparent;
+    transition:background .3s ease, border-color .3s ease, backdrop-filter .3s ease;
+  }
+  header.site.scrolled{
+    background:color-mix(in srgb, var(--card) 92%, transparent);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav-wrap{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:64px}
+  .logo{display:flex;align-items:center;text-decoration:none}
+  .logo img{height:32px;width:auto;display:block;transition:filter .3s ease}
+  header.site:not(.scrolled) .logo img{filter:brightness(0) invert(1)} /* 투명 상태에서는 화이트 로고 */
+  nav.gnb{display:flex;gap:34px}
+  nav.gnb a{color:#fff;text-decoration:none;font-size:15px;font-weight:500;letter-spacing:.01em;transition:color .3s ease}
+  header.site.scrolled nav.gnb a{color:var(--ink)}
+  nav.gnb a:hover{color:var(--blue)}
+  header.site:not(.scrolled) nav.gnb a:hover{color:#9FD1F5}
+  nav.gnb a.hot{color:#6FC1F2;position:relative}
+  header.site.scrolled nav.gnb a.hot{color:var(--blue)}
+  nav.gnb a.hot::after{content:"AI";position:absolute;top:-9px;right:-18px;font-size:9px;font-weight:600;background:var(--orange);color:#fff;border-radius:8px;padding:1px 5px;letter-spacing:.05em}
+  /* ───────── Hero (동영상 배경 · 스크롤 시 고정) ───────── */
+  .hero{
+    position:sticky; top:0; z-index:0; overflow:hidden;
+    background:linear-gradient(150deg, var(--hero-a), var(--hero-b)); /* 영상 로드 전 대체 배경 */
+    color:#fff;
+    padding:88px 24px 96px;
+    min-height:100vh; min-height:100svh;
+    display:flex; flex-direction:column; justify-content:center;
+  }
+  .hero-video{
+    position:absolute; inset:0; width:100%; height:100%;
+    object-fit:cover; z-index:0;
+  }
+  .hero-overlay{
+    position:absolute; inset:0; z-index:1;
+    background:
+      radial-gradient(900px 420px at 78% -10%, var(--hero-glow), transparent 60%),
+      radial-gradient(700px 380px at 12% 110%, rgba(242,101,50,.14), transparent 55%),
+      linear-gradient(150deg, rgba(7,27,46,.82), rgba(14,58,94,.72));
+  }
+  .hero-inner{max-width:880px;margin:0 auto;text-align:center;position:relative;z-index:2}
+  .hero .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;
+    font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+    color:#9FD1F5;border:1px solid rgba(159,209,245,.4);border-radius:999px;padding:6px 14px;
+    margin-bottom:22px;
+  }
+  .hero .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:#5AD08F;box-shadow:0 0 8px #5AD08F}
+  .hero h1{
+    font-size:clamp(34px,5.4vw,58px);font-weight:700;letter-spacing:-.02em;
+    margin:0 0 14px;line-height:1.18;text-wrap:balance;
+    text-shadow:0 2px 24px rgba(3,15,28,.55);
+  }
+  .hero h1 em{font-style:normal;color:#6FC1F2}
+  .hero p.sub{color:#CBDCEA;font-size:16px;margin:0 auto 40px;max-width:560px;text-shadow:0 1px 12px rgba(3,15,28,.5)}
+  /* AI 검색창 */
+  .ai-search{
+    position:relative;max-width:680px;margin:0 auto;
+  }
+  .ai-search form{
+    display:flex;align-items:center;gap:10px;
+    background:rgba(255,255,255,.97);
+    border-radius:999px;padding:8px 8px 8px 22px;
+    box-shadow:0 0 0 1px rgba(255,255,255,.25), 0 8px 40px rgba(3,20,36,.45), 0 0 42px rgba(58,160,235,.28);
+  }
+  .ai-search .spark{flex:none;font-size:19px}
+  .ai-search input{
+    flex:1;border:0;outline:0;background:transparent;
+    font:inherit;font-size:16px;color:#1A2430;min-width:0;
+  }
+  .ai-search input::placeholder{color:#7C8B99}
+  .ai-search button{
+    flex:none;border:0;cursor:pointer;font:inherit;font-weight:600;font-size:14px;
+    color:#fff;background:linear-gradient(135deg,var(--blue),var(--blue-deep));
+    border-radius:999px;padding:11px 22px;letter-spacing:.02em;
+  }
+  .ai-search button:hover{filter:brightness(1.08)}
+  .ai-search button:focus-visible, .ai-search input:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:16px}
+  .chips button{
+    font:inherit;font-size:13px;color:#DCEBF7;cursor:pointer;
+    background:var(--chip-bg);border:1px solid var(--chip-line);border-radius:999px;padding:7px 14px;
+    backdrop-filter:blur(4px);
+  }
+  .chips button:hover{background:rgba(255,255,255,.2)}
+  .powered{margin-top:14px;font-size:11.5px;color:#9FC0DA;letter-spacing:.08em;text-shadow:0 1px 8px rgba(3,15,28,.6)}
+  .powered b{color:#BDE0F8;font-weight:600}
+  @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @keyframes blink{50%{opacity:0}}
+  /* ───────── AI 검색 레이어 팝업 (플랜아이 방식) ───────── */
+  .sp-overlay{
+    position:fixed;inset:0;z-index:120;
+    background:rgba(15,25,36,.4);backdrop-filter:blur(3px);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+    padding:28px 20px;
+  }
+  .sp-overlay[hidden]{display:none}
+  .sp-card{
+    width:min(960px, 94vw);height:min(760px, 82vh);
+    background:#fff;border-radius:18px;
+    box-shadow:0 30px 80px rgba(4,18,36,.45);
+    display:flex;flex-direction:column;overflow:hidden;
+    animation:rise .3s ease;
+  }
+  .sp-body{
+    flex:1;overflow-y:auto;padding:34px 38px 20px;
+    display:flex;flex-direction:column;gap:14px;
+  }
+  .sp-user{
+    align-self:flex-end;max-width:72%;
+    background:var(--blue);color:#fff;
+    border-radius:22px;padding:11px 20px;font-size:14.5px;line-height:1.55;
+  }
+  .sp-time{align-self:flex-end;font-size:11.5px;color:#9AA3AD;margin-top:-7px}
+  .sp-bot{font-size:14.5px;color:#333B44;line-height:1.85;white-space:pre-wrap;max-width:90%}
+  .sp-bot .cursor{display:inline-block;width:8px;height:16px;background:var(--blue);vertical-align:-2px;animation:blink .8s steps(1) infinite}
+  .sp-srcs{display:flex;flex-wrap:wrap;gap:8px}
+  .sp-srcs a{
+    font-size:12px;color:var(--blue);text-decoration:none;
+    border:1px solid #D7E4EF;border-radius:999px;padding:5px 12px;
+  }
+  .sp-srcs a:hover{background:#EFF6FC}
+  .sp-sug-title{font-size:14.5px;font-weight:600;color:#1E2630;margin-top:12px}
+  .sp-sug{display:flex;flex-direction:column;gap:8px}
+  .sp-sug button{
+    text-align:left;cursor:pointer;font:inherit;font-size:13.5px;color:#333B44;
+    background:#fff;border:1px solid #E4E8EC;border-radius:12px;padding:12px 17px;
+  }
+  .sp-sug button:hover{border-color:var(--blue);color:var(--blue)}
+  .sp-typing{display:flex;gap:4px;padding:6px 0}
+  .sp-typing i{width:6px;height:6px;border-radius:50%;background:var(--blue);opacity:.5;animation:tp 1s infinite}
+  .sp-typing i:nth-child(2){animation-delay:.15s}
+  .sp-typing i:nth-child(3){animation-delay:.3s}
+  .sp-foot{padding:0 38px 18px}
+  .sp-inputcard{
+    border:1px solid #DCE3EA;border-radius:16px;padding:16px 16px 12px;
+    display:flex;flex-direction:column;gap:14px;
+  }
+  .sp-inputcard:focus-within{border-color:var(--blue)}
+  .sp-row1{display:flex;align-items:center;gap:10px}
+  .sp-row1 .spark{color:var(--blue);font-size:17px}
+  .sp-row1 input{flex:1;border:0;outline:0;background:transparent;font:inherit;font-size:14.5px;color:#1E2630;min-width:0}
+  .sp-row1 input::placeholder{color:#8B97A3}
+  .sp-row2{display:flex;align-items:flex-end;justify-content:space-between;gap:10px}
+  .sp-chips{display:flex;flex-wrap:wrap;gap:8px}
+  .sp-chips button{
+    display:inline-flex;align-items:center;gap:6px;cursor:pointer;font:inherit;
+    font-size:12.5px;color:#3A424B;background:#fff;
+    border:1px solid #E4E8EC;border-radius:999px;padding:7px 15px;
+  }
+  .sp-chips button:hover{border-color:var(--blue);color:var(--blue)}
+  .sp-send{
+    flex:none;width:42px;height:42px;border-radius:50%;border:0;cursor:pointer;
+    background:var(--blue);color:#fff;font-size:18px;font-weight:600;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .sp-send:hover{filter:brightness(1.08)}
+  .sp-disc{font-size:11.5px;color:#9AA3AD;padding:10px 8px 0}
+  .sp-close{
+    flex:none;width:52px;height:52px;border-radius:50%;border:0;cursor:pointer;
+    background:#fff;color:#111;font-size:19px;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 8px 24px rgba(4,18,36,.35);
+  }
+  .sp-close:hover{background:#F0F2F5}
+  @media (prefers-reduced-motion: reduce){
+    .sp-card{animation:none}
+    .sp-bot .cursor{animation:none}
+  }
+  /* 스크롤 유도 */
+  .scroll-hint{
+    position:absolute;left:50%;bottom:72px;transform:translateX(-50%);z-index:2;
+    display:flex;flex-direction:column;align-items:center;gap:7px;
+    font-size:10.5px;font-weight:600;letter-spacing:.28em;color:rgba(255,255,255,.75);
+  }
+  .scroll-hint .chev{
+    width:10px;height:10px;border-right:2px solid rgba(255,255,255,.75);border-bottom:2px solid rgba(255,255,255,.75);
+    transform:rotate(45deg);animation:hint 1.6s ease-in-out infinite;
+  }
+  @keyframes hint{0%,100%{transform:rotate(45deg) translate(0,0);opacity:.5}50%{transform:rotate(45deg) translate(4px,4px);opacity:1}}
+  /* ───────── 콘텐츠 시트: 스크롤 시 히어로 위로 덮이며 올라옴 ───────── */
+  .sheet{
+    position:relative;z-index:2;
+    background:var(--ground);
+    border-radius:28px 28px 0 0;
+    margin-top:-28px;
+    box-shadow:0 -18px 44px rgba(4,20,36,.28);
+    overflow:hidden; /* 첫 섹션(네이비 밴드)이 둥근 모서리를 따르도록 */
+  }
+  /* 섹션 등장 애니메이션 (뷰포트 진입 시 fade-up) */
+  .reveal{opacity:0;transform:translateY(34px);transition:opacity .6s ease,transform .6s ease}
+  .reveal.is-visible{opacity:1;transform:none}
+  /* 카드 순차 등장: 아래에서 하나씩 착착착 */
+  .grid4 > *{opacity:0}
+  .grid4 > .is-visible{animation:cardUp .7s ease forwards}
+  @keyframes cardUp{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion: reduce){
+    .scroll-hint .chev{animation:none}
+    .reveal{opacity:1;transform:none;transition:none}
+    .grid4 > *{opacity:1}
+    .grid4 > .is-visible{animation:none}
+  }
+  /* ───────── 본문 섹션 ───────── */
+  section.block{max-width:1200px;margin:0 auto;padding:64px 24px}
+  .sec-label{font-size:12px;font-weight:600;letter-spacing:.16em;color:var(--blue);text-transform:uppercase;margin:0 0 6px}
+  section.block h2{font-size:28px;font-weight:700;letter-spacing:-.01em;margin:0 0 28px;text-wrap:balance}
+  .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+  @media (max-width:960px){.grid4{grid-template-columns:repeat(2,1fr)}}
+  @media (max-width:560px){.grid4{grid-template-columns:1fr}}
+  /* ── 신뢰 이유: 네이비 풀와이드 밴드 (번호 + 구분선) ── */
+  .trust{
+    background:linear-gradient(150deg,#08243C,#0E3A5E);
+    color:#fff;padding:78px 24px 84px;
+  }
+  .trust-inner{max-width:1200px;margin:0 auto}
+  .trust .sec-label{color:#6FC1F2}
+  .trust h2{color:#fff}
+  .trust-grid{gap:0}
+  .t-item{padding:10px 30px 0;border-left:1px solid rgba(255,255,255,.14)}
+  .t-item:first-child{border-left:0;padding-left:0}
+  .t-item .num{
+    display:block;font-size:15px;font-weight:700;letter-spacing:.1em;
+    color:var(--orange);margin-bottom:16px;
+  }
+  .t-item h3{margin:0 0 12px;font-size:17px;color:#fff;letter-spacing:-.01em}
+  .t-item p{margin:0;font-size:13.5px;color:#AFC6D8;line-height:1.8}
+  @media (max-width:960px){
+    .trust-grid{gap:34px 28px}
+    .t-item{border-left:0;padding:0}
+  }
+  /* ── 솔루션 라인업: 시리즈 그룹 + 모노그램 카드 ── */
+  .sol-group + .sol-group{margin-top:38px}
+  .group-head{display:flex;align-items:center;gap:11px;margin:0 0 16px}
+  .g-badge{font-size:12px;font-weight:600;letter-spacing:.06em;color:#fff;border-radius:6px;padding:4px 11px}
+  .g-badge.ai{background:linear-gradient(135deg,var(--blue),var(--blue-deep))}
+  .g-badge.inno{background:var(--orange)}
+  .g-desc{font-size:13px;color:var(--body)}
+  .s-card{
+    position:relative;
+    background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px 22px;
+    transition:border-color .2s ease, transform .2s ease, box-shadow .2s ease;
+  }
+  .s-card:hover{
+    border-color:var(--orange);
+    transform:translateY(-8px);
+    box-shadow:0 14px 30px rgba(15,35,55,.18), 0 4px 10px rgba(15,35,55,.10);
+  }
+  @media (prefers-reduced-motion: reduce){
+    .s-card{transition:none}
+    .s-card:hover{transform:none}
+  }
+  .s-card .name{font-weight:700;font-size:18.5px;letter-spacing:-.01em;margin:0 0 10px;color:var(--ink)}
+  .s-card p{margin:0 0 14px;font-size:13.5px;color:var(--body)}
+  .s-card .more{font-size:12px;font-weight:600;color:var(--blue);letter-spacing:.08em;text-decoration:none}
+  .s-card.live{border-color:var(--blue);box-shadow:0 0 0 3px color-mix(in srgb, var(--blue) 16%, transparent)}
+  .s-card.live:hover{
+    border-color:var(--orange);
+    box-shadow:0 14px 30px rgba(15,35,55,.18), 0 4px 10px rgba(15,35,55,.10);
+  }
+  .badge-live{
+    position:absolute;top:-11px;right:14px;font-size:11px;font-weight:600;color:#fff;
+    background:linear-gradient(135deg,var(--blue),var(--blue-deep));border-radius:999px;padding:3px 11px;letter-spacing:.03em;
+  }
+  /* ── 포트폴리오: 무한 흐름 카드 (marquee) ── */
+  .pf{padding:70px 0 88px;overflow:hidden}
+  .pf-head{max-width:1200px;margin:0 auto 30px;padding:0 24px;display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap}
+  .pf-head h2{margin-bottom:0}
+  .pf-more{font-size:13px;font-weight:600;color:var(--blue);text-decoration:none;letter-spacing:.04em;white-space:nowrap;padding-bottom:6px}
+  .pf-more:hover{color:var(--orange)}
+  .pf-flow{overflow:hidden;padding:10px 0}
+  .pf-track{display:flex;width:max-content;animation:pfFlow 55s linear infinite}
+  .pf-track.reverse{animation-direction:reverse}
+  .pf-flow:hover .pf-track{animation-play-state:paused}
+  @keyframes pfFlow{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  .pf-card{
+    flex:none;width:300px;margin-right:16px;
+    background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px 18px;
+    transition:border-color .2s ease;
+  }
+  .pf-card:hover{border-color:var(--orange)}
+  .pf-img{
+    display:block;width:100%;aspect-ratio:393/124;object-fit:contain;
+    background:#fff;border:1px solid var(--line);border-radius:9px;
+    margin-bottom:13px;
+  }
+  .pf-card .prj{margin:0;font-size:14px;color:var(--ink);line-height:1.55}
+  @media (prefers-reduced-motion: reduce){
+    .pf-track{animation:none}
+    .pf-flow{overflow-x:auto}
+  }
+  /* ───────── Footer ───────── */
+  footer.site{border-top:1px solid var(--line);padding:34px 24px 42px;text-align:center;font-size:12.5px;color:var(--body)}
+  /* ───────── 챗봇 (SIGMOID Chat PC 디자인) ───────── */
+  .bot-fab{
+    position:fixed;right:26px;bottom:26px;z-index:90;
+    width:96px;height:96px;border-radius:50%;border:1px solid #EDF0F3;cursor:pointer;
+    background:#fff;
+    box-shadow:0 8px 26px rgba(12,40,70,.28);
+    display:flex;align-items:center;justify-content:center;
+    transition:transform .2s ease;
+  }
+  .bot-fab:hover{transform:scale(1.06)}
+  .bot-fab .bot-face{width:80px;height:80px;object-fit:contain}
+  .bot-head .bot-face{width:30px;height:30px;object-fit:contain}
+  .b-brand .bot-face{width:26px;height:26px;object-fit:contain;flex:none}
+  .bot-fab .ping{position:absolute;top:2px;right:2px;width:13px;height:13px;border-radius:50%;background:#5AD08F;border:2px solid #fff}
+  .bot-fab:hover{filter:brightness(1.06)}
+  .bot-label{
+    position:fixed;right:134px;bottom:56px;z-index:90;
+    background:#fff;color:#333;border:1px solid #E4E8EC;
+    font-size:12.5px;font-weight:700;border-radius:999px;padding:7px 14px;
+    box-shadow:0 4px 14px rgba(10,30,50,.14);
+  }
+  /* 챗 패널은 디자인 시안에 맞춰 라이트 고정 */
+  .bot-panel{
+    position:fixed;right:26px;bottom:134px;z-index:95;
+    width:min(380px, calc(100vw - 40px));height:min(580px, calc(100vh - 174px));
+    background:#fff;border:1px solid #ECEFF3;border-radius:18px;
+    box-shadow:0 20px 60px rgba(5,25,45,.28);
+    display:none;flex-direction:column;overflow:hidden;
+  }
+  .bot-panel.on{display:flex;animation:rise .28s ease}
+  .bot-head{
+    background:#fff;border-bottom:1px solid #F1F3F6;
+    padding:13px 16px;display:flex;align-items:center;gap:9px;
+  }
+  .bot-head .avatar{width:26px;height:26px;flex:none}
+  .bot-head .avatar svg{width:26px;height:26px;display:block}
+  .bot-head .t{flex:1;min-width:0}
+  .bot-head .t b{display:block;font-size:14.5px;color:#1E2630;letter-spacing:-.01em}
+  .bot-head button{border:0;background:transparent;color:#9AA3AD;font-size:17px;cursor:pointer;padding:4px}
+  .bot-head button:hover{color:#333}
+  .bot-body{flex:1;overflow-y:auto;padding:20px 18px;display:flex;flex-direction:column;gap:18px;background:#fff}
+  /* 봇 메시지: 아바타+이름 헤더 아래 플레인 텍스트 */
+  .b-msg{display:flex;flex-direction:column;gap:7px}
+  .b-brand{display:flex;align-items:center;gap:7px;font-weight:600;font-size:13.5px;color:#1E2630}
+  .b-brand svg{width:22px;height:22px;flex:none}
+  .b-text{font-size:13.5px;color:#3A424B;line-height:1.7;white-space:pre-wrap}
+  .b-time{font-size:11px;color:#9AA3AD}
+  .b-srcs{display:flex;flex-wrap:wrap;gap:6px}
+  .b-srcs a{
+    display:inline-flex;align-items:center;gap:5px;text-decoration:none;
+    border:1px solid #E4E8EC;border-radius:999px;padding:4px 11px;
+    font-size:11.5px;color:#4A5560;background:#fff;
+  }
+  .b-srcs a:hover{border-color:var(--orange);color:var(--orange)}
+  .b-acts{display:flex;gap:12px}
+  .b-acts button{border:0;background:transparent;padding:0;cursor:pointer;color:#B7BEC6}
+  .b-acts button:hover{color:var(--orange)}
+  .b-acts svg{width:14px;height:14px;display:block}
+  /* 추천 질문: 세로 스택 알약 버튼 */
+  .sug{display:flex;flex-direction:column;align-items:flex-start;gap:8px;margin-top:2px}
+  .sug button{
+    display:inline-flex;align-items:center;gap:8px;text-align:left;cursor:pointer;
+    font:inherit;font-size:12.5px;color:#3A424B;
+    background:#fff;border:1px solid #E4E8EC;border-radius:999px;padding:9px 15px;
+  }
+  .sug button .qi{
+    flex:none;width:16px;height:16px;border:1.2px solid #C6CDD4;border-radius:4px;
+    display:inline-flex;align-items:center;justify-content:center;
+    font-size:10px;font-weight:600;color:#9AA3AD;
+  }
+  .sug button:hover{border-color:var(--orange);color:var(--orange)}
+  .sug button:hover .qi{border-color:var(--orange);color:var(--orange)}
+  /* 사용자 메시지: 오렌지 필 버블 */
+  .u-msg{align-self:flex-end;display:flex;flex-direction:column;align-items:flex-end;gap:5px;max-width:85%}
+  .u-bubble{
+    background:var(--orange);color:#fff;font-size:13.5px;line-height:1.55;
+    border-radius:20px;padding:10px 17px;white-space:pre-wrap;
+  }
+  /* 입력창: 오렌지 라운드 필 + 종이비행기 */
+  .bot-input{padding:12px 14px 7px;background:#fff}
+  .bot-input form{
+    display:flex;align-items:center;gap:6px;
+    border:1.5px solid var(--orange);border-radius:999px;padding:4px 6px 4px 16px;
+  }
+  .bot-input input{
+    flex:1;border:0;outline:0;background:transparent;min-width:0;
+    font:inherit;font-size:13px;color:#1E2630;
+  }
+  .bot-input input::placeholder{color:#A8B0B9}
+  .bot-input button{
+    flex:none;border:0;background:transparent;cursor:pointer;
+    color:var(--orange);padding:6px;display:flex;align-items:center;
+  }
+  .bot-input button:hover{filter:brightness(1.1)}
+  .bot-input button svg{width:19px;height:19px}
+  .bot-disc{font-size:10.5px;color:#A8B0B9;text-align:center;padding:0 14px 11px;background:#fff}
+  .typing{display:flex;gap:4px;padding:4px 0}
+  .typing i{width:6px;height:6px;border-radius:50%;background:var(--orange);opacity:.5;animation:tp 1s infinite}
+  .typing i:nth-child(2){animation-delay:.15s}
+  .typing i:nth-child(3){animation-delay:.3s}
+  @keyframes tp{40%{opacity:1;transform:translateY(-3px)}}
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="nav-wrap">
+    <a class="logo" href="https://www.innodis.co.kr/"><img src="이노디스로고.png" alt="이노디스 — Smart Biz, Smart Answer!"></a>
+    <nav class="gnb" aria-label="주요 메뉴">
+      <a href="https://www.innodis.co.kr/content.do?key=2302140001">Innodis</a>
+      <a href="https://www.innodis.co.kr/content.do?key=2505130002">Business</a>
+      <a class="hot" href="https://www.innodis.co.kr/content.do?key=2505130010&amp;menuTitle=%EC%9D%B8%EA%B3%B5%EC%A7%80%EB%8A%A5%20%ED%86%B5%ED%95%A9%EA%B2%80%EC%83%89">SIGMOID AI</a>
+      <a href="https://www.innodis.co.kr/content.do?key=2505130005&amp;menuTitle=%EC%BD%98%ED%85%90%EC%B8%A0%EA%B4%80%EB%A6%AC%EC%86%94%EB%A3%A8%EC%85%98">Solution</a>
+      <a href="https://www.innodis.co.kr/bbsctt/list.do?key=2302140005">Portfolio</a>
+      <a href="https://www.innodis.co.kr/content.do?key=2302140003">Recruit</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <video class="hero-video" src="taim00090000802.mp4" autoplay muted loop playsinline aria-hidden="true"></video>
+  <div class="hero-overlay" aria-hidden="true"></div>
+  <div class="hero-inner">
+    <div class="eyebrow"><span class="dot"></span>SIGMOID AI 실시간 시연 중</div>
+    <h1>Smart Biz, <em>Smart Answer!</em></h1>
+    <p class="sub">이노디스가 만든 생성형 AI를 지금 바로 경험해 보세요.<br>질문의 의도를 이해하고, 정확한 답을 찾아드립니다.</p>
+
+    <div class="ai-search">
+      <form id="aiForm">
+        <span class="spark" aria-hidden="true">✦</span>
+        <input id="aiInput" type="text" autocomplete="off"
+          placeholder="궁금한 것을 물어보세요. 예) 공공기관 홈페이지에 AI 챗봇을 도입하려면?"
+          aria-label="AI 검색어 입력">
+        <button type="submit">AI 검색</button>
+      </form>
+      <div class="chips" id="chips">
+        <button type="button">이노디스는 어떤 회사인가요?</button>
+        <button type="button">SIGMOID AI는 기존 검색과 뭐가 다른가요?</button>
+        <button type="button">공공기관 구축 사례</button>
+        <button type="button">견적 문의는 어떻게 하나요?</button>
+      </div>
+      <div class="powered">POWERED BY <b>SIGMOID AI SEARCH</b> — 이노디스 자체 LLM 운영</div>
+    </div>
+
+  </div>
+  <div class="scroll-hint" aria-hidden="true">SCROLL<span class="chev"></span></div>
+</section>
+
+<!-- AI 검색 레이어 팝업 -->
+<div class="sp-overlay" id="spOverlay" hidden>
+  <div class="sp-card" role="dialog" aria-modal="true" aria-label="SIGMOID AI 검색">
+    <div class="sp-body" id="spBody" aria-live="polite"></div>
+    <div class="sp-foot">
+      <form class="sp-inputcard" id="spForm">
+        <div class="sp-row1">
+          <span class="spark" aria-hidden="true">✦</span>
+          <input id="spInput" type="text" autocomplete="off"
+            placeholder="AI 시그모이드입니다. 이노디스에 대해 궁금한 점을 물어보세요!"
+            aria-label="AI 검색어 입력">
+        </div>
+        <div class="sp-row2">
+          <div class="sp-chips">
+            <button type="button" data-q="공공기관 구축 사례">📁 Portfolio</button>
+            <button type="button" data-q="견적 문의는 어떻게 하나요?">💬 Contact</button>
+          </div>
+          <button class="sp-send" type="submit" aria-label="질문 보내기">↑</button>
+        </div>
+      </form>
+      <div class="sp-disc">· SIGMOID AI도 가끔 실수할 수 있습니다. 중요한 정보는 꼭 다시 한번 확인하세요.</div>
+    </div>
+  </div>
+  <button class="sp-close" id="spClose" aria-label="검색창 닫기">✕</button>
+</div>
+
+<main class="sheet">
+<section class="trust">
+  <div class="trust-inner">
+    <p class="sec-label">Why Innodis</p>
+    <h2>이노디스를 신뢰하는 이유</h2>
+    <div class="grid4 trust-grid">
+      <div class="t-item"><span class="num">01</span><h3>LLM 자체운영 기업</h3><p>독자 개발 AI 솔루션의 지속적인 품질 관리를 위해 LLM을 자체 운영하는 전문 기업입니다.</p></div>
+      <div class="t-item"><span class="num">02</span><h3>기술역량 우수기업(T3) 인증</h3><p>기술성·시장성·경영역량을 종합 평가받아 공공 분야 신뢰성을 공식 인정받았습니다.</p></div>
+      <div class="t-item"><span class="num">03</span><h3>수상 및 인증 보유</h3><p>중소기업기술혁신유공 대통령상, Hi-Seoul 우수기업, GS 인증 등 다수의 수상·인증 보유.</p></div>
+      <div class="t-item"><span class="num">04</span><h3>클라우드 IDC 운영</h3><p>자체 클라우드 IDC 운영으로 보안성과 안정성을 강화한 탄력적 인프라를 제공합니다.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="block">
+  <p class="sec-label">Solution</p>
+  <h2>솔루션 라인업</h2>
+  <div class="sol-group">
+    <div class="group-head"><span class="g-badge ai">SIGMOID AI</span><span class="g-desc">이노디스 자체 LLM 기반 AI 솔루션</span></div>
+    <div class="grid4">
+      <div class="s-card live"><span class="badge-live">▲ 메인에서 시연 중</span><p class="name">SIGMOID AI Search</p><p>질문의 의도를 파악해 정확히 찾는 인공지능 통합 검색 솔루션</p><a class="more" href="#">MORE →</a></div>
+      <div class="s-card live"><span class="badge-live">▲ 메인에서 시연 중</span><p class="name">SIGMOID AI Chat</p><p>공공부문 민원·문의 응대에 특화된 AI 챗봇 솔루션</p><a class="more" href="#">MORE →</a></div>
+      <div class="s-card"><p class="name">SIGMOID AI Pick</p><p>취향과 클릭의 의미를 해석해 알아서 추천하는 콘텐츠 큐레이션 솔루션</p><a class="more" href="#">MORE →</a></div>
+      <div class="s-card"><p class="name">SIGMOID AI TM</p><p>다채널 데이터를 수집해 한눈에 분석하는 빅데이터 분석 솔루션</p><a class="more" href="#">MORE →</a></div>
+    </div>
+  </div>
+  <div class="sol-group">
+    <div class="group-head"><span class="g-badge inno">INNO</span><span class="g-desc">공공부문 웹 구축·운영 솔루션</span></div>
+    <div class="grid4">
+      <div class="s-card"><p class="name">INNO CMS</p><p>공공부문 웹사이트를 누구나 손쉽게 관리하는 통합 콘텐츠 관리 솔루션</p><a class="more" href="#">MORE →</a></div>
+      <div class="s-card"><p class="name">INNO PMS</p><p>공공사업에 최적화된 대규모 프로젝트 일정·과업 관리 솔루션</p><a class="more" href="#">MORE →</a></div>
+      <div class="s-card"><p class="name">INNO AMS</p><p>전시·관람·대관을 손쉽게, 문화예술 특화 아트 매니지먼트 솔루션</p><a class="more" href="#">MORE →</a></div>
+      <div class="s-card"><p class="name">INNO DAMS</p><p>디지털 자산을 안전하게 보존·기록하는 디지털 아카이브 솔루션</p><a class="more" href="#">MORE →</a></div>
+    </div>
+  </div>
+</section>
+
+<section class="pf">
+  <div class="pf-head">
+    <div>
+      <p class="sec-label">Portfolio</p>
+      <h2>공공기관과 함께한 프로젝트</h2>
+    </div>
+    <a class="pf-more" href="https://www.innodis.co.kr/bbsctt/list.do?key=2302140005" target="_blank" rel="noopener">전체 포트폴리오 보기 →</a>
+  </div>
+  <div class="pf-flow">
+    <div class="pf-track">
+      <div class="pf-card"><img class="pf-img" loading="lazy" alt="보건복지부" src="pf/pf01.png"><p class="prj">첨단재생의료포털 유지관리</p></div>
+      <div class="pf-card"><img class="pf-img" loading="lazy" alt="서울특별시" src="pf/pf02.png"><p class="prj">청년몽땅정보통 전면 재구축</p></div>
+      <div class="pf-card"><img class="pf-img" loading="lazy" alt="경찰청" src="pf/pf03.png"><p class="prj">교통민원24 홈페이지 종합개편</p></div>
+      <div class="pf-card"><img class="pf-img" loading="lazy" alt="문화체육관광부" src="pf/pf04.png"><p class="prj">공감누리집 운영 및 개선</p></div>
+      <div class="pf-card"><img class="pf-img" loading="lazy" alt="국가유산청" src="pf/pf05.png"><p class="prj">국가유산 정보서비스 개선</p></div>
+      <div class="pf-card"><img class="pf-img" loading="lazy" alt="국립현대미술관" src="pf/pf06.png"><p class="prj">한국미술 누리집 구축</p></div>
+      <div class="pf-card"><img class="pf-img" loading="lazy" alt="산업통상자원부 2030부산세계박람회유치지원단" src="pf/pf07.png"><p class="prj">2030부산세계박람회유치위원회 홈페이지 구축</p></div>
+      <div class="pf-card"><img class="pf-img" loading="lazy" alt="정보통신산업진흥원" src="pf/pf08.png"><p class="prj">인공지능놀이터 운영 및 유지관리</p></div>
+    </div>
+  </div>
+  <div class="pf-flow">
+    <div class="pf-track reverse">
+      <div class="pf-card"><img class="pf-img" loading="lazy" alt="조달청" src="pf/pf09.png"><p class="prj">보안성 강화를 위한 조달청 홈페이지 재구축</p></div>
+      <div class="pf-card"><img class="pf-img" loading="lazy" alt="국세청" src="pf/pf10.png"><p class="prj">지식관리시스템 운영 및 유지관리</p></div>
+      <div class="pf-card"><img class="pf-img" loading="lazy" alt="행정안전부" src="pf/pf11.png"><p class="prj">자전거행복나눔 운영 유지관리</p></div>
+      <div class="pf-card"><img class="pf-img" loading="lazy" alt="서울특별시" src="pf/pf12.png"><p class="prj">스마트서울포털 영문홈페이지 개설 및 유지관리</p></div>
+      <div class="pf-card"><img class="pf-img" loading="lazy" alt="강원특별자치도교육청" src="pf/pf13.png"><p class="prj">강원도교육청 대표 누리집 전면 개편</p></div>
+      <div class="pf-card"><img class="pf-img" loading="lazy" alt="통일부" src="pf/pf14.png"><p class="prj">이산가족정보통합시스템 기능개선</p></div>
+      <div class="pf-card"><img class="pf-img" loading="lazy" alt="국립중앙극장" src="pf/pf15.png"><p class="prj">국립극장 70주년 기념 홈페이지 구축</p></div>
+      <div class="pf-card"><img class="pf-img" loading="lazy" alt="국립대한민국임시정부기념관" src="pf/pf16.png"><p class="prj">국립대한민국임시정부기념관 누리집 개편</p></div>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  (05854) 서울시 송파구 송파대로201 송파테라타워2 A동 1319호 · TEL 02-6958-9903 · help@innodis.co.kr<br>
+  Copyright © innodis Co., Ltd. All rights reserved
+</footer>
+</main>
+
+<!-- 챗봇 (SIGMOID Chat PC 디자인) -->
+<svg style="display:none" aria-hidden="true">
+  <symbol id="ic-bot" viewBox="0 0 24 24">
+    <rect width="24" height="24" rx="7" fill="#F26532"/>
+    <path d="M5.5 9.2A2.7 2.7 0 0 1 8.2 6.5h7.6a2.7 2.7 0 0 1 2.7 2.7v3.6a2.7 2.7 0 0 1-2.7 2.7h-5.6l-3.6 2.9c-.45.36-1.1.04-1.1-.53V9.2z" fill="#fff"/>
+    <circle cx="9.4" cy="11" r="1" fill="#F26532"/><circle cx="14.6" cy="11" r="1" fill="#F26532"/>
+  </symbol>
+  <symbol id="ic-up" viewBox="0 0 24 24">
+    <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="ic-copy" viewBox="0 0 24 24">
+    <rect x="9" y="9" width="12" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/>
+    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" fill="none" stroke="currentColor" stroke-width="1.8"/>
+  </symbol>
+  <symbol id="ic-send" viewBox="0 0 24 24">
+    <path d="M22 2 11 13M22 2 15 22l-4-9-9-4 20-7z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+  </symbol>
+</svg>
+
+<div class="bot-label" id="botLabel">💬 무엇이든 물어보세요!</div>
+<button class="bot-fab" id="botFab" aria-label="AI 챗봇 열기"><img class="bot-face" src="bot1.png" alt=""><span class="ping"></span></button>
+
+<div class="bot-panel" id="botPanel" role="dialog" aria-label="SIGMOID Chat">
+  <div class="bot-head">
+    <img class="bot-face" src="bot1.png" alt="">
+    <div class="t"><b>SIGMOID Chat</b></div>
+    <button id="botClose" aria-label="챗봇 닫기">✕</button>
+  </div>
+  <div class="bot-body" id="botBody">
+    <div class="b-msg">
+      <div class="b-brand"><img class="bot-face" src="bot1.png" alt="">이노디스 상담 도우미</div>
+      <div class="b-text">안녕하세요!
+이노디스 대화형 FAQ 도우미입니다.
+아래 제안을 선택하시거나 입력창에 질문해 보세요.</div>
+      <div class="sug" id="botSug">
+        <button type="button"><span class="qi">?</span>솔루션 소개</button>
+        <button type="button"><span class="qi">?</span>구축 사례</button>
+        <button type="button"><span class="qi">?</span>견적/도입 문의</button>
+        <button type="button"><span class="qi">?</span>오시는 길</button>
+      </div>
+    </div>
+  </div>
+  <div class="bot-input">
+    <form id="botForm">
+      <input id="botInput" type="text" autocomplete="off" placeholder="질문을 입력해 주세요" aria-label="챗봇 메시지 입력">
+      <button type="submit" aria-label="전송"><svg><use href="#ic-send"/></svg></button>
+    </form>
+  </div>
+  <div class="bot-disc">SIGMOID Chat은 부정확한 정보를 제공할 수 있습니다.</div>
+</div>
+
+<script>
+(function(){
+  var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ── AI 검색 시연 ── */
+  var ANSWERS = {
+    "이노디스는 어떤 회사인가요?": {
+      text:"이노디스는 LLM을 자체 운영하는 AI 전문 기업으로, 공공부문에 특화된 웹·AI 솔루션을 개발·공급합니다. 기술역량 우수기업(T3) 인증과 GS 인증을 보유하고 있으며, 자체 클라우드 IDC를 운영해 보안성과 안정성을 함께 제공합니다. 대표 제품으로 SIGMOID AI 시리즈(Search·Chat·Pick·TM)와 INNO 시리즈(CMS·PMS·AMS·DAMS)가 있습니다.",
+      srcs:[["회사소개","#"],["SIGMOID AI","#"],["인증 현황","#"]]
+    },
+    "SIGMOID AI는 기존 검색과 뭐가 다른가요?": {
+      text:"기존 키워드 검색은 단어가 일치하는 문서만 찾지만, SIGMOID AI Search는 질문의 '의도'를 이해합니다. 예를 들어 \"수수료 감면 대상\"을 검색하면 관련 규정·서식·안내 페이지를 종합해 하나의 답변으로 생성하고, 근거가 된 출처 링크를 함께 제시합니다. 자체 LLM 기반이라 기관 내부망 구축도 가능합니다.",
+      srcs:[["SIGMOID AI Search 소개","#"],["도입 사례","#"]]
+    },
+    "공공기관 구축 사례": {
+      text:"이노디스는 공공부문 웹서비스와 AI 검색·챗봇 구축 경험을 다수 보유하고 있습니다. 문화예술기관 통합 웹서비스, 공공 민원 응대 챗봇, 기관 통합검색 고도화 등 대표 사례는 Portfolio 메뉴에서 확인하실 수 있습니다. 유사 기관 사례 기반의 맞춤 제안이 가능합니다.",
+      srcs:[["Portfolio","#"],["구축 문의","#"]]
+    },
+    "견적 문의는 어떻게 하나요?": {
+      text:"전화(02-6958-9903) 또는 이메일(help@innodis.co.kr)로 문의하시면 담당 컨설턴트가 요구사항을 확인한 뒤 맞춤 견적을 안내해 드립니다. 우측 하단 AI 챗봇으로 문의를 남기셔도 영업일 기준 1일 내에 회신드립니다.",
+      srcs:[["Contact Us","#"],["AI 챗봇 상담","#"]]
+    }
+  };
+  var DEFAULT_ANSWER = {
+    text:"좋은 질문입니다! 실제 서비스에서는 SIGMOID AI Search가 사내 지식과 홈페이지 콘텐츠를 근거로 답변을 생성합니다. 이 시안에서는 아래 추천 질문을 눌러 시연 흐름을 확인해 보세요.",
+    srcs:[["SIGMOID AI Search 소개","#"]]
+  };
+
+  var form = document.getElementById('aiForm');
+  var input = document.getElementById('aiInput');
+  var spOverlay = document.getElementById('spOverlay');
+  var spBody = document.getElementById('spBody');
+  var spInput = document.getElementById('spInput');
+  var spTimer = null;
+  var sugShown = false;
+
+  function openSearch(){
+    if (spOverlay.hidden){
+      spOverlay.hidden = false;
+      document.body.style.overflow = 'hidden';
+    }
+  }
+  function closeSearch(){
+    spOverlay.hidden = true;
+    document.body.style.overflow = '';
+  }
+  function spScroll(){ spBody.scrollTop = spBody.scrollHeight; }
+  function spTimeKo(){
+    var d = new Date();
+    var h = d.getHours();
+    return (h < 12 ? '오전 ' : '오후 ') + (h % 12 || 12) + ':' + String(d.getMinutes()).padStart(2,'0');
+  }
+  function addSuggestions(exceptQ){
+    if (sugShown) return;
+    sugShown = true;
+    var title = document.createElement('div');
+    title.className = 'sp-sug-title';
+    title.textContent = '💡 이런 질문들을 해보세요!';
+    var wrap = document.createElement('div');
+    wrap.className = 'sp-sug';
+    Object.keys(ANSWERS).filter(function(k){ return k !== exceptQ; }).forEach(function(k){
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = k;
+      b.addEventListener('click', function(){ ask(k); });
+      wrap.appendChild(b);
+    });
+    spBody.appendChild(title);
+    spBody.appendChild(wrap);
+    spScroll();
+  }
+  function spTypeOut(el, text, done){
+    clearInterval(spTimer);
+    if (reduced){ el.textContent = text; if (done) done(); return; }
+    el.innerHTML = '<span class="cursor"></span>';
+    var i = 0;
+    spTimer = setInterval(function(){
+      i += 2;
+      el.innerHTML = text.slice(0, i).replace(/&/g,'&amp;').replace(/</g,'&lt;') + '<span class="cursor"></span>';
+      spScroll();
+      if (i >= text.length){
+        clearInterval(spTimer);
+        el.textContent = text;
+        if (done) done();
+      }
+    }, 16);
+  }
+  function ask(q){
+    openSearch();
+    var u = document.createElement('div');
+    u.className = 'sp-user';
+    u.textContent = q;
+    var tm = document.createElement('div');
+    tm.className = 'sp-time';
+    tm.textContent = spTimeKo();
+    spBody.appendChild(u);
+    spBody.appendChild(tm);
+    var t = document.createElement('div');
+    t.className = 'sp-typing';
+    t.innerHTML = '<i></i><i></i><i></i>';
+    spBody.appendChild(t);
+    spScroll();
+    var a = ANSWERS[q] || DEFAULT_ANSWER;
+    setTimeout(function(){
+      t.remove();
+      var bot = document.createElement('div');
+      bot.className = 'sp-bot';
+      spBody.appendChild(bot);
+      spTypeOut(bot, a.text, function(){
+        if (a.srcs && a.srcs.length){
+          var sc = document.createElement('div');
+          sc.className = 'sp-srcs';
+          a.srcs.forEach(function(s){
+            var l = document.createElement('a');
+            l.href = s[1];
+            l.textContent = '📄 ' + s[0];
+            sc.appendChild(l);
+          });
+          spBody.appendChild(sc);
+        }
+        addSuggestions(q);
+        spScroll();
+      });
+    }, reduced ? 50 : 700);
+    spInput.focus();
+  }
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    var q = input.value.trim();
+    if (q){ input.value = ''; ask(q); }
+  });
+  document.getElementById('chips').addEventListener('click', function(e){
+    if (e.target.tagName === 'BUTTON') ask(e.target.textContent);
+  });
+  document.getElementById('spForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var q = spInput.value.trim();
+    if (q){ spInput.value = ''; ask(q); }
+  });
+  spOverlay.querySelector('.sp-chips').addEventListener('click', function(e){
+    var b = e.target.closest('button[data-q]');
+    if (b) ask(b.dataset.q);
+  });
+  document.getElementById('spClose').addEventListener('click', closeSearch);
+  spOverlay.addEventListener('click', function(e){ if (e.target === spOverlay) closeSearch(); });
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && !spOverlay.hidden) closeSearch(); });
+
+  /* ── 챗봇 시연 (SIGMOID Chat PC 디자인) ── */
+  var BOT = {
+    "솔루션 소개":{
+      text:"이노디스 솔루션은 크게 두 라인업입니다.\n\n• SIGMOID AI 시리즈 — Search(AI 검색), Chat(AI 챗봇), Pick(추천), TM(빅데이터 분석)\n• INNO 시리즈 — CMS(콘텐츠 관리), PMS(프로젝트 관리), AMS(아트 매니지먼트), DAMS(디지털 아카이브)\n\n어떤 솔루션이 궁금하신가요?",
+      srcs:[["SIGMOID AI","#"],["Solution","#"]]
+    },
+    "구축 사례":{
+      text:"공공기관 통합검색 고도화, 문화예술기관 웹서비스, 민원 응대 챗봇 등 다수의 공공부문 구축 사례를 보유하고 있습니다. Portfolio 메뉴에서 자세히 보실 수 있어요. 유사 기관 사례를 찾아드릴까요?",
+      srcs:[["Portfolio","#"]]
+    },
+    "견적/도입 문의":{
+      text:"도입을 검토 중이시군요!\n전화 02-6958-9903 또는 help@innodis.co.kr 로 문의 주시면 담당 컨설턴트가 맞춤 견적을 안내드립니다. 여기에 기관명과 연락처를 남기셔도 영업일 1일 내 회신드려요.",
+      srcs:[["Contact Us","#"]]
+    },
+    "오시는 길":{
+      text:"서울시 송파구 송파대로 201, 송파테라타워2 A동 1319호입니다.\n8호선 문정역 4번 출구에서 300m, SRT 수서역에서 10분 거리예요.",
+      srcs:[["Location","#"]]
+    }
+  };
+  var fab = document.getElementById('botFab');
+  var label = document.getElementById('botLabel');
+  var bpanel = document.getElementById('botPanel');
+  var bbody = document.getElementById('botBody');
+  var binput = document.getElementById('botInput');
+
+  /* 새로고침마다 마스코트 표정 랜덤 선택 (bot1~5.png) */
+  var BOT_ICON = 'bot' + (1 + Math.floor(Math.random() * 5)) + '.png';
+  document.querySelectorAll('.bot-face').forEach(function(el){ el.src = BOT_ICON; });
+
+  function toggleBot(open){
+    bpanel.classList.toggle('on', open);
+    label.style.display = open ? 'none' : '';
+    if (open) binput.focus();
+  }
+  fab.addEventListener('click', function(){ toggleBot(!bpanel.classList.contains('on')); });
+  document.getElementById('botClose').addEventListener('click', function(){ toggleBot(false); });
+
+  function nowKo(){
+    var d = new Date();
+    var h = d.getHours();
+    var ap = h < 12 ? '오전' : '오후';
+    var h12 = h % 12 || 12;
+    return ap + ' ' + h12 + ':' + String(d.getMinutes()).padStart(2,'0');
+  }
+  function addUser(text){
+    var w = document.createElement('div');
+    w.className = 'u-msg';
+    var b = document.createElement('div');
+    b.className = 'u-bubble';
+    b.textContent = text;
+    var t = document.createElement('div');
+    t.className = 'b-time';
+    t.textContent = nowKo();
+    w.appendChild(b); w.appendChild(t);
+    bbody.appendChild(w);
+    bbody.scrollTop = bbody.scrollHeight;
+  }
+  function addBot(ans){
+    var w = document.createElement('div');
+    w.className = 'b-msg';
+    var brand = document.createElement('div');
+    brand.className = 'b-brand';
+    brand.innerHTML = '<img class="bot-face" src="' + BOT_ICON + '" alt="">';
+    brand.appendChild(document.createTextNode('이노디스 상담 도우미'));
+    var tx = document.createElement('div');
+    tx.className = 'b-text';
+    tx.textContent = ans.text;
+    var tm = document.createElement('div');
+    tm.className = 'b-time';
+    tm.textContent = nowKo();
+    w.appendChild(brand); w.appendChild(tx); w.appendChild(tm);
+    if (ans.srcs && ans.srcs.length){
+      var sc = document.createElement('div');
+      sc.className = 'b-srcs';
+      ans.srcs.forEach(function(s){
+        var a = document.createElement('a');
+        a.href = s[1];
+        a.textContent = '🔗 ' + s[0];
+        sc.appendChild(a);
+      });
+      w.appendChild(sc);
+    }
+    var acts = document.createElement('div');
+    acts.className = 'b-acts';
+    acts.innerHTML =
+      '<button type="button" aria-label="도움이 됐어요"><svg><use href="#ic-up"/></svg></button>' +
+      '<button type="button" aria-label="도움이 안 됐어요" style="transform:rotate(180deg)"><svg><use href="#ic-up"/></svg></button>' +
+      '<button type="button" aria-label="답변 복사"><svg><use href="#ic-copy"/></svg></button>';
+    w.appendChild(acts);
+    bbody.appendChild(w);
+    bbody.scrollTop = bbody.scrollHeight;
+  }
+  function botReply(q){
+    var t = document.createElement('div');
+    t.className = 'typing';
+    t.innerHTML = '<i></i><i></i><i></i>';
+    bbody.appendChild(t);
+    bbody.scrollTop = bbody.scrollHeight;
+    setTimeout(function(){
+      t.remove();
+      var ans = BOT[q];
+      if (!ans){
+        var k = Object.keys(BOT).find(function(key){ return q.indexOf(key.slice(0,2)) !== -1; });
+        ans = k ? BOT[k] : {text:"네, 확인해 드릴게요! 실제 서비스에서는 SIGMOID Chat이 기관 지식베이스를 근거로 답변합니다. 추천 질문 버튼으로 시연 흐름을 확인해 보세요.", srcs:[["SIGMOID AI Chat","#"]]};
+      }
+      addBot(ans);
+    }, reduced ? 50 : 800);
+  }
+  document.getElementById('botForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var q = binput.value.trim();
+    if (!q) return;
+    binput.value = '';
+    addUser(q);
+    botReply(q);
+  });
+  document.getElementById('botSug').addEventListener('click', function(e){
+    var btn = e.target.closest('button');
+    if (btn){ addUser(btn.textContent.replace(/^\?/, '').trim()); botReply(btn.textContent.replace(/^\?/, '').trim()); }
+  });
+
+  /* ── 스크롤 연출: 섹션 fade-up 등장 + 히어로 서서히 물러남 ── */
+  var reveals = document.querySelectorAll('.reveal');
+  if ('IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if (en.isIntersecting){ en.target.classList.add('is-visible'); io.unobserve(en.target); }
+      });
+    }, {threshold: .12});
+    reveals.forEach(function(el){ io.observe(el); });
+  } else {
+    reveals.forEach(function(el){ el.classList.add('is-visible'); });
+  }
+
+  /* 카드 그리드: 뷰포트 진입 시 자식 카드를 순서대로 착착착 등장
+     (스크롤 이벤트 기반 — IntersectionObserver 지연/누락 환경에서도 확실히 발동) */
+  var grids = Array.prototype.slice.call(document.querySelectorAll('.grid4'));
+  function revealGrid(g){
+    if (g.dataset.revealed) return;
+    g.dataset.revealed = '1';
+    Array.prototype.forEach.call(g.children, function(card, i){
+      card.style.animationDelay = (i * 160) + 'ms';
+      card.classList.add('is-visible');
+    });
+  }
+  function checkGrids(){
+    grids.forEach(function(g){
+      if (g.dataset.revealed) return;
+      var r = g.getBoundingClientRect();
+      if (r.top < window.innerHeight * 0.88 && r.bottom > 0) revealGrid(g);
+    });
+  }
+  window.addEventListener('scroll', checkGrids, {passive:true});
+  window.addEventListener('resize', checkGrids, {passive:true});
+  document.addEventListener('visibilitychange', checkGrids);
+  checkGrids(); /* 로드 시 이미 보이는 그리드 처리 */
+
+  /* GNB: 첫 화면(영상 위)에서는 투명, 흰색 콘텐츠 영역이 GNB에 닿으면 흰색 전환 */
+  var siteHeader = document.querySelector('header.site');
+  var sheetEl = document.querySelector('.sheet');
+  function updateHeader(){
+    siteHeader.classList.toggle('scrolled', sheetEl.getBoundingClientRect().top <= siteHeader.offsetHeight);
+  }
+  window.addEventListener('scroll', updateHeader, {passive:true});
+  window.addEventListener('resize', updateHeader, {passive:true});
+  updateHeader();
+
+  var heroInner = document.querySelector('.hero-inner');
+  var scrollHint = document.querySelector('.scroll-hint');
+  if (!reduced){
+    var ticking = false;
+    window.addEventListener('scroll', function(){
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(function(){
+        var p = Math.min(window.scrollY / (window.innerHeight * .85), 1);
+        heroInner.style.opacity = String(1 - p * .75);
+        heroInner.style.transform = 'translateY(' + (-p * 40) + 'px)';
+        if (scrollHint) scrollHint.style.opacity = String(1 - p * 2.5);
+        ticking = false;
+      });
+    }, {passive:true});
+  }
+
+  /* ── 포트폴리오 무한 흐름: 트랙 내용을 2벌로 복제해 심리스 루프 ── */
+  document.querySelectorAll('.pf-track').forEach(function(track){
+    track.innerHTML += track.innerHTML;
+  });
+
+  /* 자동재생이 차단된 환경 대비: 첫 상호작용 시 재생 재시도 */
+  var vid = document.querySelector('.hero-video');
+  document.addEventListener('click', function retry(){
+    if (vid && vid.paused) vid.play().catch(function(){});
+    document.removeEventListener('click', retry);
+  });
+})();
+</script>
+</body>
+</html>
