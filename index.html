@@ -17,25 +17,26 @@
     --blue:#1C80CC;
     --blue-deep:#0E5A96;
     --orange:#F26532;
-    --ink:#1A2430;
-    --body:#4A5560;
-    --line:#DCE3EA;
-    --ground:#F5F8FB;
-    --card:#FFFFFF;
+    /* 기본 = 다크모드 */
+    --ink:#E8EEF4;
+    --body:#A8B4C0;
+    --line:#2A3846;
+    --ground:#0D141B;
+    --card:#16202B;
     --hero-a:#071B2E;
     --hero-b:#0E3A5E;
     --hero-glow:rgba(58,160,235,.35);
     --chip-bg:rgba(255,255,255,.10);
     --chip-line:rgba(255,255,255,.28);
+    color-scheme:dark;
   }
-  @media (prefers-color-scheme: dark){
-    :root{
-      --ink:#E8EEF4;
-      --body:#A8B4C0;
-      --line:#2A3846;
-      --ground:#0D141B;
-      --card:#16202B;
-    }
+  :root[data-theme="light"]{
+    --ink:#1A2430;
+    --body:#4A5560;
+    --line:#DCE3EA;
+    --ground:#F5F8FB;
+    --card:#FFFFFF;
+    color-scheme:light;
   }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
@@ -67,6 +68,15 @@
   nav.gnb a.hot{color:#6FC1F2;position:relative}
   header.site.scrolled nav.gnb a.hot{color:var(--blue)}
   nav.gnb a.hot::after{content:"AI";position:absolute;top:-9px;right:-18px;font-size:9px;font-weight:600;background:var(--orange);color:#fff;border-radius:8px;padding:1px 5px;letter-spacing:.05em}
+  .nav-right{display:flex;align-items:center;gap:22px}
+  .theme-toggle{
+    border:1px solid rgba(255,255,255,.35);background:transparent;cursor:pointer;
+    width:34px;height:34px;border-radius:50%;font-size:15px;line-height:1;padding:0;
+    display:flex;align-items:center;justify-content:center;
+    transition:border-color .3s ease, transform .2s ease;
+  }
+  .theme-toggle:hover{transform:rotate(18deg)}
+  header.site.scrolled .theme-toggle{border-color:var(--line)}
   /* ───────── Hero (동영상 배경 · 스크롤 시 고정) ───────── */
   .hero{
     position:sticky; top:0; z-index:0; overflow:hidden;
@@ -286,14 +296,18 @@
   .g-desc{font-size:13px;color:var(--body)}
   .s-card{
     position:relative;
-    background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px 22px;
-    transition:border-color .2s ease, transform .2s ease, box-shadow .2s ease;
+    background:var(--card);border:1px solid var(--line);padding:24px 22px;
+    transition:border-color .2s ease, background .2s ease, transform .2s ease, box-shadow .2s ease;
   }
   .s-card:hover{
-    border-color:var(--orange);
+    background:var(--ink);border-color:var(--ink);
     transform:translateY(-8px);
-    box-shadow:0 14px 30px rgba(15,35,55,.18), 0 4px 10px rgba(15,35,55,.10);
+    box-shadow:0 14px 30px rgba(15,35,55,.28), 0 4px 10px rgba(15,35,55,.14);
   }
+  .s-card:hover .name{color:var(--card)}
+  .s-card:hover p:not(.name){color:var(--card);opacity:.75}
+  .s-card:hover .more{color:var(--orange)}
+  .s-card p, .s-card .name, .s-card .more{transition:color .2s ease, opacity .2s ease}
   @media (prefers-reduced-motion: reduce){
     .s-card{transition:none}
     .s-card:hover{transform:none}
@@ -303,8 +317,8 @@
   .s-card .more{font-size:12px;font-weight:600;color:var(--blue);letter-spacing:.08em;text-decoration:none}
   .s-card.live{border-color:var(--blue);box-shadow:0 0 0 3px color-mix(in srgb, var(--blue) 16%, transparent)}
   .s-card.live:hover{
-    border-color:var(--orange);
-    box-shadow:0 14px 30px rgba(15,35,55,.18), 0 4px 10px rgba(15,35,55,.10);
+    border-color:var(--ink);
+    box-shadow:0 14px 30px rgba(15,35,55,.28), 0 4px 10px rgba(15,35,55,.14);
   }
   .badge-live{
     position:absolute;top:-11px;right:14px;font-size:11px;font-weight:600;color:#fff;
@@ -323,16 +337,17 @@
   @keyframes pfFlow{from{transform:translateX(0)}to{transform:translateX(-50%)}}
   .pf-card{
     flex:none;width:300px;margin-right:16px;
-    background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px 18px;
-    transition:border-color .2s ease;
+    background:var(--card);border:1px solid var(--line);padding:16px 18px 18px;
+    transition:border-color .2s ease, background .2s ease;
   }
-  .pf-card:hover{border-color:var(--orange)}
+  .pf-card:hover{background:var(--ink);border-color:var(--ink)}
+  .pf-card:hover .prj{color:var(--card)}
   .pf-img{
     display:block;width:100%;aspect-ratio:393/124;object-fit:contain;
-    background:#fff;border:1px solid var(--line);border-radius:9px;
+    background:#fff;border:1px solid var(--line);
     margin-bottom:13px;
   }
-  .pf-card .prj{margin:0;font-size:14px;color:var(--ink);line-height:1.55}
+  .pf-card .prj{margin:0;font-size:14px;color:var(--ink);line-height:1.55;transition:color .2s ease}
   @media (prefers-reduced-motion: reduce){
     .pf-track{animation:none}
     .pf-flow{overflow-x:auto}
@@ -456,6 +471,7 @@
       <a href="https://www.innodis.co.kr/bbsctt/list.do?key=2302140005">Portfolio</a>
       <a href="https://www.innodis.co.kr/content.do?key=2302140003">Recruit</a>
     </nav>
+    <button class="theme-toggle" id="themeToggle" aria-label="라이트/다크 모드 전환">☀️</button>
   </div>
 </header>
 
@@ -960,6 +976,22 @@
   window.addEventListener('resize', checkGrids, {passive:true});
   document.addEventListener('visibilitychange', checkGrids);
   checkGrids(); /* 로드 시 이미 보이는 그리드 처리 */
+
+  /* 테마: 기본 다크, 토글로 라이트 전환 (localStorage 저장) */
+  var themeBtn = document.getElementById('themeToggle');
+  function applyTheme(theme){
+    if (theme === 'light') document.documentElement.setAttribute('data-theme', 'light');
+    else document.documentElement.removeAttribute('data-theme');
+    themeBtn.textContent = theme === 'light' ? '🌙' : '☀️';
+  }
+  var savedTheme = null;
+  try { savedTheme = localStorage.getItem('innodis-theme'); } catch(e){}
+  applyTheme(savedTheme === 'light' ? 'light' : 'dark');
+  themeBtn.addEventListener('click', function(){
+    var next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    applyTheme(next);
+    try { localStorage.setItem('innodis-theme', next); } catch(e){}
+  });
 
   /* GNB: 첫 화면(영상 위)에서는 투명, 흰색 콘텐츠 영역이 GNB에 닿으면 흰색 전환 */
   var siteHeader = document.querySelector('header.site');
