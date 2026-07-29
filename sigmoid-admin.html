@@ -138,6 +138,8 @@ textarea.inp{resize:vertical;min-height:96px;line-height:1.6;}
 .tbl th{background:#f0f4f8;text-align:left;font-size:12px;color:var(--sub);font-weight:600;padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap;}
 .tbl td{padding:11px 12px;border-bottom:1px solid var(--line);font-size:13px;vertical-align:middle;}
 .tbl tr:hover td{background:#f8fafc;}
+.tbl tr.loglink{cursor:pointer;}
+.tbl tr.loglink:hover td{background:var(--blue-bg);}
 .badge{display:inline-block;font-size:11px;font-weight:600;padding:3px 9px;}
 .b-blue{background:var(--blue-bg);color:var(--blue-dark);}
 .b-green{background:#e6f6ef;color:var(--ok);}
@@ -331,15 +333,16 @@ textarea.inp{resize:vertical;min-height:96px;line-height:1.6;}
         </div>
       </div>
       <div class="card">
-        <h2>최근 대화 로그</h2>
+        <h2>최근 대화 로그 <button class="btn ghost sm" style="margin-left:auto;" onclick="goView('logs')">더보기 →</button></h2>
         <table class="tbl">
           <tr><th>시간</th><th>질문</th><th>유형</th><th>상태</th></tr>
-          <tr><td>14:22</td><td>시그모이드 도입 비용이 궁금해요</td><td><span class="badge b-blue">요금 문의</span></td><td><span class="badge b-green">성공</span></td></tr>
-          <tr><td>14:05</td><td>AI 검색 솔루션 구축 기간은?</td><td><span class="badge b-blue">제품 서비스</span></td><td><span class="badge b-green">성공</span></td></tr>
-          <tr><td>13:48</td><td>공공기관 구축 사례 있나요?</td><td><span class="badge b-blue">제품 서비스</span></td><td><span class="badge b-green">성공</span></td></tr>
-          <tr><td>13:31</td><td>유지보수 범위가 어떻게 되나요?</td><td><span class="badge b-gray">기타 문의</span></td><td><span class="badge b-yellow">보완 필요</span></td></tr>
-          <tr><td>13:10</td><td>담당자 연락처 알려주세요</td><td><span class="badge b-gray">기타 문의</span></td><td><span class="badge b-green">성공</span></td></tr>
+          <tr class="loglink" onclick="openLogDetail('cost')"><td>14:22</td><td>시그모이드 도입 비용이 궁금해요</td><td><span class="badge b-blue">요금 문의</span></td><td><span class="badge b-green">성공</span></td></tr>
+          <tr class="loglink" onclick="openLogDetail('period')"><td>14:05</td><td>AI 검색 솔루션 구축 기간은?</td><td><span class="badge b-blue">제품 서비스</span></td><td><span class="badge b-green">성공</span></td></tr>
+          <tr class="loglink" onclick="openLogDetail('case')"><td>13:48</td><td>공공기관 구축 사례 있나요?</td><td><span class="badge b-blue">제품 서비스</span></td><td><span class="badge b-green">성공</span></td></tr>
+          <tr class="loglink" onclick="openLogDetail('maint')"><td>13:31</td><td>유지보수 범위가 어떻게 되나요?</td><td><span class="badge b-gray">기타 문의</span></td><td><span class="badge b-yellow">보완 필요</span></td></tr>
+          <tr class="loglink" onclick="openLogDetail('contact')"><td>13:10</td><td>담당자 연락처 알려주세요</td><td><span class="badge b-gray">기타 문의</span></td><td><span class="badge b-green">성공</span></td></tr>
         </table>
+        <div class="hint" style="margin-top:10px;">질문을 클릭하면 대화 상세 내용을 확인할 수 있습니다.</div>
       </div>
     </div>
     <div class="note">💡 <b>추천 순서</b> — ① AI 기본 설정에서 역할 만들기 → ② 지식베이스에 자료 등록 → ③ 대화 테스트로 확인 → ④ 설치하기에서 웹사이트 적용</div>
@@ -731,11 +734,11 @@ textarea.inp{resize:vertical;min-height:96px;line-height:1.6;}
       </div>
       <table class="tbl">
         <tr><th>일시</th><th>사용자</th><th>질문</th><th>유형</th><th>응답시간</th><th>만족도</th><th></th></tr>
-        <tr><td>07-29 14:22</td><td>방문자 #1041</td><td>시그모이드 도입 비용이 궁금해요</td><td><span class="badge b-blue">요금 문의</span></td><td>1.4초</td><td>★★★★★</td><td><button class="btn ghost sm" onclick="openLogModal()">상세</button></td></tr>
-        <tr><td>07-29 14:05</td><td>방문자 #1040</td><td>AI 검색 솔루션 구축 기간은?</td><td><span class="badge b-blue">제품 서비스</span></td><td>1.9초</td><td>★★★★☆</td><td><button class="btn ghost sm" onclick="openLogModal()">상세</button></td></tr>
-        <tr><td>07-29 13:48</td><td>방문자 #1039</td><td>공공기관 구축 사례 있나요?</td><td><span class="badge b-blue">제품 서비스</span></td><td>1.6초</td><td>★★★★★</td><td><button class="btn ghost sm" onclick="openLogModal()">상세</button></td></tr>
-        <tr><td>07-29 13:31</td><td>방문자 #1038</td><td>유지보수 범위가 어떻게 되나요?</td><td><span class="badge b-gray">기타 문의</span></td><td>2.3초</td><td>★★★☆☆</td><td><button class="btn ghost sm" onclick="openLogModal()">상세</button></td></tr>
-        <tr><td>07-29 13:10</td><td>방문자 #1037</td><td>담당자 연락처 알려주세요</td><td><span class="badge b-gray">기타 문의</span></td><td>1.2초</td><td>★★★★★</td><td><button class="btn ghost sm" onclick="openLogModal()">상세</button></td></tr>
+        <tr class="loglink" onclick="openLogDetail('cost')"><td>07-29 14:22</td><td>방문자 #1041</td><td>시그모이드 도입 비용이 궁금해요</td><td><span class="badge b-blue">요금 문의</span></td><td>1.4초</td><td>★★★★★</td><td><button class="btn ghost sm">상세</button></td></tr>
+        <tr class="loglink" onclick="openLogDetail('period')"><td>07-29 14:05</td><td>방문자 #1040</td><td>AI 검색 솔루션 구축 기간은?</td><td><span class="badge b-blue">제품 서비스</span></td><td>1.9초</td><td>★★★★☆</td><td><button class="btn ghost sm">상세</button></td></tr>
+        <tr class="loglink" onclick="openLogDetail('case')"><td>07-29 13:48</td><td>방문자 #1039</td><td>공공기관 구축 사례 있나요?</td><td><span class="badge b-blue">제품 서비스</span></td><td>1.6초</td><td>★★★★★</td><td><button class="btn ghost sm">상세</button></td></tr>
+        <tr class="loglink" onclick="openLogDetail('maint')"><td>07-29 13:31</td><td>방문자 #1038</td><td>유지보수 범위가 어떻게 되나요?</td><td><span class="badge b-gray">기타 문의</span></td><td>2.3초</td><td>★★★☆☆</td><td><button class="btn ghost sm">상세</button></td></tr>
+        <tr class="loglink" onclick="openLogDetail('contact')"><td>07-29 13:10</td><td>방문자 #1037</td><td>담당자 연락처 알려주세요</td><td><span class="badge b-gray">기타 문의</span></td><td>1.2초</td><td>★★★★★</td><td><button class="btn ghost sm">상세</button></td></tr>
       </table>
       <div class="hint" style="margin-top:10px;">💡 지표 증감 변화는 선택한 기간과 동일한 이전 기간 대비 기준으로 표시됩니다.</div>
     </div>
@@ -795,15 +798,14 @@ textarea.inp{resize:vertical;min-height:96px;line-height:1.6;}
 <!-- ===== 대화 상세 모달 ===== -->
 <div class="modal-bg" id="logModal">
   <div class="modal">
-    <div class="mh"><b>대화 상세 — 방문자 #1041</b><button onclick="closeLogModal()">✕</button></div>
+    <div class="mh"><b id="lmTitle">대화 상세</b><button onclick="closeLogModal()">✕</button></div>
     <div class="mb">
-      <div class="msg user"><div class="bub">시그모이드 도입 비용이 궁금해요</div></div>
-      <div class="msg bot"><div><div class="who">시그모이드 챗 · 1.4초</div><div class="bub">시그모이드 도입 비용은 적용 범위와 데이터 규모에 따라 달라집니다. 표준 구축과 커스터마이징 구축 중 선택하실 수 있으며, 자세한 견적은 도입 상담을 통해 안내해 드립니다. 상담 신청을 도와드릴까요?</div></div></div>
+      <div class="msg user"><div class="bub" id="lmQ"></div></div>
+      <div class="msg bot"><div><div class="who" id="lmWho"></div><div class="bub" id="lmA"></div></div></div>
       <div class="dpanel" style="margin-top:14px;">
         <h3>참조된 주제</h3>
-        <div class="refdoc">📄 SIGMOID AI 검색 솔루션</div>
-        <div class="refdoc">📄 자주 묻는 질문 (FAQ) 24건</div>
-        <div class="metric" style="margin-top:8px;"><span>적용된 조건 규칙</span><b>상담 신청 링크 연결</b></div>
+        <div id="lmRefs"></div>
+        <div class="metric" style="margin-top:8px;"><span>적용된 조건 규칙</span><b id="lmRule"></b></div>
       </div>
     </div>
   </div>
@@ -918,10 +920,46 @@ function sendChat(){
 }
 function askSample(btn){ pushMsg('user', btn.textContent); respond(btn.textContent); }
 
+// ---- view 이동 ----
+function goView(v){ document.querySelector('a[data-v="'+v+'"]').click(); }
+
+// ---- 대화 로그 상세 데이터 ----
+const LOG_DATA = {
+  cost:    { user:'방문자 #1041', time:'07-29 14:22 · 1.4초',
+             q:'시그모이드 도입 비용이 궁금해요',
+             a:'시그모이드 도입 비용은 적용 범위와 데이터 규모에 따라 달라집니다. 표준 구축과 커스터마이징 구축 중 선택하실 수 있으며, 자세한 견적은 도입 상담을 통해 안내해 드립니다. 상담 신청을 도와드릴까요?',
+             refs:['SIGMOID AI 검색 솔루션','자주 묻는 질문 (FAQ) 24건'], rule:'상담 신청 링크 연결' },
+  period:  { user:'방문자 #1040', time:'07-29 14:05 · 1.9초',
+             q:'AI 검색 솔루션 구축 기간은?',
+             a:'표준 구축 기준으로 지식 데이터 준비 상태에 따라 구축 기간이 달라집니다. 데이터가 준비되어 있다면 세팅과 검수를 포함해 단기간 내 적용이 가능하며, 커스터마이징 범위에 따라 일정이 조정됩니다. 자세한 일정은 도입 상담에서 안내해 드립니다.',
+             refs:['SIGMOID AI 검색 솔루션','유지관리 서비스 정책'], rule:'상담 신청 링크 연결' },
+  case:    { user:'방문자 #1039', time:'07-29 13:48 · 1.6초',
+             q:'공공기관 구축 사례 있나요?',
+             a:'네, 이노디스는 공공기관과 기업 고객을 대상으로 다수의 시스템 구축 실적을 보유하고 있습니다. 대표 사례로 공공 포털 AI 검색 적용, 기관 홈페이지 챗봇 구축 등이 있습니다. 사례집 자료를 보내드릴까요?',
+             refs:['주요 구축 사례','회사 개요 및 연혁'], rule:'사례집 파일 다운로드 제공' },
+  maint:   { user:'방문자 #1038', time:'07-29 13:31 · 2.3초',
+             q:'유지보수 범위가 어떻게 되나요?',
+             a:'유지관리 서비스는 정기 점검, 장애 대응, 지식베이스 업데이트 지원을 포함합니다. 다만 세부 SLA 기준에 대한 지식이 부족하여 일반적인 안내만 제공되었습니다. 관련 지식을 보강하면 답변 품질이 개선됩니다.',
+             refs:['유지관리 서비스 정책'], rule:'— (보완 필요: SLA 세부 지식 부족)' },
+  contact: { user:'방문자 #1037', time:'07-29 13:10 · 1.2초',
+             q:'담당자 연락처 알려주세요',
+             a:'도입 상담은 영업기획팀에서 도와드리고 있습니다. 아래 상담 신청 버튼을 통해 연락처를 남겨주시면 담당자가 빠르게 연락드리겠습니다.',
+             refs:['담당자 연락처 안내'], rule:'연락처 카드 + 상담 신청 링크 연결' },
+};
+
 // ---- modals ----
 function openModal(){ document.getElementById('apiModal').classList.add('open'); }
 function closeModal(){ document.getElementById('apiModal').classList.remove('open'); }
-function openLogModal(){ document.getElementById('logModal').classList.add('open'); }
+function openLogDetail(key){
+  const d = LOG_DATA[key]; if(!d) return;
+  document.getElementById('lmTitle').textContent = '대화 상세 — ' + d.user;
+  document.getElementById('lmQ').textContent = d.q;
+  document.getElementById('lmWho').textContent = '시그모이드 챗 · ' + d.time;
+  document.getElementById('lmA').textContent = d.a;
+  document.getElementById('lmRefs').innerHTML = d.refs.map(r => '<div class="refdoc">📄 ' + r + '</div>').join('');
+  document.getElementById('lmRule').textContent = d.rule;
+  document.getElementById('logModal').classList.add('open');
+}
 function closeLogModal(){ document.getElementById('logModal').classList.remove('open'); }
 document.querySelectorAll('.modal-bg').forEach(m=>m.addEventListener('click',e=>{ if(e.target===m) m.classList.remove('open'); }));
 
