@@ -349,6 +349,7 @@
     transition:transform .2s ease;
   }
   .bot-fab:hover{transform:scale(1.06)}
+  .bot-face{transition:opacity .2s ease}
   .bot-fab .bot-face{width:80px;height:80px;object-fit:contain}
   .bot-head .bot-face{width:30px;height:30px;object-fit:contain}
   .b-brand .bot-face{width:26px;height:26px;object-fit:contain;flex:none}
@@ -813,9 +814,24 @@
   var bbody = document.getElementById('botBody');
   var binput = document.getElementById('botInput');
 
-  /* 새로고침마다 마스코트 표정 랜덤 선택 (bot1~5.png) */
-  var BOT_ICON = 'bot' + (1 + Math.floor(Math.random() * 5)) + '.png';
-  document.querySelectorAll('.bot-face').forEach(function(el){ el.src = BOT_ICON; });
+  /* 마스코트 표정: 시작은 랜덤, 이후 5초마다 자동 순환 (bot1~5.png) */
+  var botIdx = Math.floor(Math.random() * 5);
+  var BOT_ICON = 'bot' + (botIdx + 1) + '.png';
+  for (var bi = 1; bi <= 5; bi++){ new Image().src = 'bot' + bi + '.png'; } /* 프리로드 */
+  function setBotFace(){
+    BOT_ICON = 'bot' + (botIdx + 1) + '.png';
+    document.querySelectorAll('.bot-face').forEach(function(el){ el.src = BOT_ICON; });
+  }
+  setBotFace();
+  setInterval(function(){
+    botIdx = (botIdx + 1) % 5;
+    var faces = document.querySelectorAll('.bot-face');
+    faces.forEach(function(el){ el.style.opacity = '0'; });
+    setTimeout(function(){
+      setBotFace();
+      faces.forEach(function(el){ el.style.opacity = '1'; });
+    }, 200);
+  }, 5000);
 
   function toggleBot(open){
     bpanel.classList.toggle('on', open);
