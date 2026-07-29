@@ -282,8 +282,9 @@ textarea.inp{resize:vertical;min-height:96px;line-height:1.6;}
     <a href="#" data-v="security"><span class="ic">🛡</span>보안센터</a>
   </nav>
   <div class="side-foot">
-    <span class="plan">PRO 플랜</span><br>
-    월간 대화 3,182 / 5,000건<br>
+    <div style="color:#c6d4e2;font-size:12px;margin-bottom:7px;">월간 대화 <b id="usageTxt" style="color:#fff;">1,528 / 2,500건</b></div>
+    <div style="background:rgba(255,255,255,.12);height:5px;margin-bottom:11px;"><div id="usageBar" style="background:var(--orange);height:100%;width:61%;"></div></div>
+    <button class="btn orange sm" style="width:100%;margin-bottom:10px;" onclick="openUsageModal()">사용량 관리</button>
     innodis.co.kr
   </div>
 </aside>
@@ -795,6 +796,37 @@ textarea.inp{resize:vertical;min-height:96px;line-height:1.6;}
   </div>
 </div>
 
+<!-- ===== 사용량 관리 모달 ===== -->
+<div class="modal-bg" id="usageModal">
+  <div class="modal">
+    <div class="mh"><b>사용량 관리</b><button onclick="closeUsageModal()">✕</button></div>
+    <div class="mb">
+      <div class="frow">
+        <label>이번 달 사용량</label>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;">
+          <span style="font-size:20px;font-weight:700;" id="umTxt">1,528 <small style="font-size:13px;font-weight:500;color:var(--sub);">/ 2,500건</small></span>
+          <span style="font-size:12.5px;color:var(--sub);" id="umPct">61% 사용</span>
+        </div>
+        <div style="background:#eef1f5;height:8px;"><div id="umBar" style="background:var(--orange);height:100%;width:61%;"></div></div>
+        <div class="hint">월간 제공 대화량을 초과할 경우 해당 월의 서비스 이용이 제한될 수 있습니다. 필요 시 아래에서 제공 건수를 충전하세요.</div>
+      </div>
+      <div class="frow" style="margin-top:20px;">
+        <label>제공 건수 충전</label>
+        <div class="choices" data-single style="grid-template-columns:repeat(3,1fr);" id="rechargeBox">
+          <div class="choice sel" data-cnt="1000"><div class="t">1,000건</div><div class="d" style="font-size:15px;font-weight:700;color:var(--ink);margin-top:6px;">550천원</div><div class="d" style="margin-top:4px;">건당 550원</div></div>
+          <div class="choice" data-cnt="2000"><div class="t">2,000건</div><div class="d" style="font-size:15px;font-weight:700;color:var(--ink);margin-top:6px;">880천원</div><div class="d" style="margin-top:4px;">건당 440원</div></div>
+          <div class="choice" data-cnt="3000"><div class="t">3,000건</div><div class="d" style="font-size:15px;font-weight:700;color:var(--ink);margin-top:6px;">1,100천원</div><div class="d" style="margin-top:4px;">건당 367원</div></div>
+        </div>
+        <div class="hint">충전된 건수는 당월 제공 건수에 즉시 합산됩니다. (부가가치세 별도)</div>
+      </div>
+      <div style="text-align:right;margin-top:18px;">
+        <button class="btn ghost sm" style="margin-right:8px;" onclick="closeUsageModal()">취소</button>
+        <button class="btn orange" onclick="recharge()">충전하기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ===== 대화 상세 모달 ===== -->
 <div class="modal-bg" id="logModal">
   <div class="modal">
@@ -946,6 +978,29 @@ const LOG_DATA = {
              a:'도입 상담은 영업기획팀에서 도와드리고 있습니다. 아래 상담 신청 버튼을 통해 연락처를 남겨주시면 담당자가 빠르게 연락드리겠습니다.',
              refs:['담당자 연락처 안내'], rule:'연락처 카드 + 상담 신청 링크 연결' },
 };
+
+// ---- 사용량 관리 ----
+let usageUsed = 1528, usageTotal = 2500;
+function fmt(n){ return n.toLocaleString('ko-KR'); }
+function renderUsage(){
+  const pct = Math.min(100, Math.round(usageUsed / usageTotal * 100));
+  document.getElementById('usageTxt').textContent = fmt(usageUsed) + ' / ' + fmt(usageTotal) + '건';
+  document.getElementById('usageBar').style.width = pct + '%';
+  document.getElementById('umTxt').innerHTML = fmt(usageUsed) + ' <small style="font-size:13px;font-weight:500;color:var(--sub);">/ ' + fmt(usageTotal) + '건</small>';
+  document.getElementById('umPct').textContent = pct + '% 사용';
+  document.getElementById('umBar').style.width = pct + '%';
+}
+function openUsageModal(){ renderUsage(); document.getElementById('usageModal').classList.add('open'); }
+function closeUsageModal(){ document.getElementById('usageModal').classList.remove('open'); }
+function recharge(){
+  const sel = document.querySelector('#rechargeBox .choice.sel'); if(!sel) return;
+  const cnt = parseInt(sel.dataset.cnt, 10);
+  const price = sel.querySelectorAll('.d')[0].textContent;
+  usageTotal += cnt;
+  renderUsage();
+  closeUsageModal();
+  toast(fmt(cnt) + '건이 충전되었습니다. (' + price + ') 제공 건수: ' + fmt(usageTotal) + '건');
+}
 
 // ---- modals ----
 function openModal(){ document.getElementById('apiModal').classList.add('open'); }
